@@ -1,6 +1,6 @@
 <template lang="html">
     <div class="stage">
-        <mino v-for="(mino,index) in this.minos" :x=mino.x :y=mino.y :kind=mino.kind :key="mino.id"></mino>
+        <mino v-for="(mino,index) in this.minos" :x=mino.x :y=mino.y :kind=mino.kind :face=mino.face :key="mino.id"></mino>
     </div>
 </template>
 
@@ -23,6 +23,36 @@ export default {
             min = Math.ceil(min);
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min)) + min;
+        },
+        registerKeyboardMapping(){
+            var self = this;
+            
+            window.addEventListener('keydown', function(event) {
+                event.preventDefault();
+                switch (event.keyCode) {
+                    case 67:  // C
+                    self.minos = [{
+                        x : Math.floor(self.size.w / 2) - 2,
+                        y : Math.floor(self.size.h / 2) - 2,
+                        kind : self.getRandomInt(0,7),
+                        face : 0
+                    }];
+                    break;
+                    case 37: // Left
+                    self.minos[0].x--;
+                    break;
+                    case 38: // Up
+                    if(++self.minos[0].face > 3) self.minos[0].face = 0;
+                    break;
+                    case 39: // Right
+                    self.minos[0].x++;
+                    break;
+                    case 40: // Down
+                    self.minos[0].y++;
+                    break;
+                    default:
+                }
+            });
         }
     },
     components : {
@@ -34,38 +64,11 @@ export default {
         self.minos = [{
             x : Math.floor(self.size.w / 2) - 2,
             y : Math.floor(self.size.h / 2) - 2,
-            kind : self.getRandomInt(0,7)
+            kind : self.getRandomInt(0,7),
+            face : 0
         }];
 
-        window.addEventListener('keydown', function(event) {
-            event.preventDefault();
-            switch (event.keyCode) {
-                case 32:
-
-                // Change Minos
-                self.minos = [{
-                    x : Math.floor(self.size.w / 2) - 2,
-                    y : Math.floor(self.size.h / 2) - 2,
-                    kind : self.getRandomInt(0,7)
-                }];
-
-                break;
-                case 37:
-                self.minos[0].x--;
-                break;
-                case 38:
-                self.minos[0].y--;
-                break;
-                case 39:
-                self.minos[0].x++;
-                break;
-                case 40:
-                self.minos[0].y++;
-                break;
-                default:
-
-            }
-        });
+        self.registerKeyboardMapping();
 
     }
 }
@@ -74,7 +77,7 @@ export default {
 <style lang="less">
 .stage{
     width: 480px;
-    height: 650px;
+    height: 640px;
     border: 1px solid #bbb;
     position: relative;
     display: block;
