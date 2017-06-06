@@ -7,6 +7,7 @@
 <script>
 
 import mino from './Mino.vue';
+import tiles from './Tiles.js'
 
 export default {
     data(){
@@ -15,7 +16,9 @@ export default {
                 w : 15,
                 h : 20
             },
-            minos : []
+            minos : [],
+            active : 0,
+            lastState : null
         }
     },
     methods: {
@@ -25,82 +28,119 @@ export default {
             return Math.floor(Math.random() * (max - min)) + min;
         },
         registerKeyboardMapping(){
+            console.info('Registering Keyboard Maps');
             var self = this;
-            
             window.addEventListener('keydown', function(event) {
                 event.preventDefault();
                 switch (event.keyCode) {
                     case 67:  // C
-                    self.minos = [{
-                        x : Math.floor(self.size.w / 2) - 2,
-                        y : Math.floor(self.size.h / 2) - 2,
-                        kind : self.getRandomInt(0,7),
-                        face : 0
-                    }];
+                    console.log('Changing Mino');
+                    self.minos = [];
+                    self.createNewMino();
                     break;
                     case 37: // Left
-                    self.minos[0].x--;
+                    self.moveLeft();
                     break;
-                    case 38: // Up
-                    if(++self.minos[0].face > 3) self.minos[0].face = 0;
+                    case 38: // Rotate
+                    self.moveRotate();
                     break;
                     case 39: // Right
-                    self.minos[0].x++;
+                    self.moveRight();
                     break;
                     case 40: // Down
-                    self.minos[0].y++;
+                    self.moveDown();
                     break;
                     default:
                 }
+
             });
+        },
+        saveState(){
+            this.lastState = {
+                x : this.minos[this.active].x,
+                y : this.minos[this.active].y,
+                kind : this.minos[this.active].kind,
+                face : this.minos[this.active].face
+            };
+        },
+        revertState(){
+            if(this.lastState !== null){
+                this.minos[this.active] = this.lastState;
+                this.lastState = null;
+            }
+        },
+        moveLeft(){
+            console.log('Move Left');
+            this.saveState();
+            this.minos[this.active].x--;
+            if(!this.checkCollisions()){
+                this.revertState();
+            }
+        },
+        moveRight(){
+            console.log('Move Right');
+            this.saveState();
+            this.minos[this.active].x++;
+            if(!this.checkCollisions()){
+                this.revertState();
+            }
+        },
+        moveDown(){
+            console.log('Move Down');
+            this.saveState();
+            this.minos[this.active].y++;
+            if(!this.checkCollisions()){
+                this.revertState();
+            }
+        },
+        moveRotate(){
+            console.log('Rotate Mino');
+            this.saveState();
+            if(++this.minos[this.active].face > 3) this.minos[this.active].face = 0;
+            if(!this.checkCollisions()){
+                this.revertState();
+            }
+
+        },
+        createNewMino(){
+            console.info('Creating Mino');
+            this.lastState = null;
+            this.minos.push({
+                x : Math.floor(this.size.w / 2) - 2,
+                y : Math.floor(this.size.h / 2) - 2,
+                kind : this.getRandomInt(0,7),
+                face : 0
+            });
+        },
+        checkCollisions(){
+            console.info('Checking collisions');
+            var activeMino = this.minos[this.active];
+            var activeMinoTiles = tiles[activeMino.kind][activeMino.face];
+            for (var row = 0; row < activeMinoTiles.length; row++) {
+                for (var col = 0; col < activeMinoTiles[row].length; col++) {
+                    if(activeMinoTiles[row][col]){
+                        if((row+activeMino.y < 0) || (col+activeMino.x < 0) || (row+activeMino.y >= this.size.h) || (col+activeMino.x >= this.size.w)){
+                            console.log('Mino Collided');
+                            return false;
+                        }
+
+                    }
+                }
+            }
+            console.log('Mino Safe');
+            return true;
         }
     },
     components : {
         mino
     },
-    created(){
+    mounted(){
         var self = this;
         // Create one mino on center
-        self.minos = [{
-            x : Math.floor(self.size.w / 2) - 2,
-            y : Math.floor(self.size.h / 2) - 2,
-            kind : self.getRandomInt(0,7),
-            face : 0
-        }];
-
+        self.minos = [];
         self.registerKeyboardMapping();
+        self.createNewMino();
 
     }
 }
 </script>
-
-<style lang="less">
-.stage{
-    width: 480px;
-    height: 640px;
-    border: 1px solid #bbb;
-    position: relative;
-    display: block;
-    margin: 0 auto;
-    margin-top: 10px;
-    background: #fff;
-
-    // Checkered BG
-    background-image:
-    -moz-linear-gradient(45deg, #BBB 25%, transparent 25%),
-    -moz-linear-gradient(-45deg, #BBB 25%, transparent 25%),
-    -moz-linear-gradient(45deg, transparent 75%, #BBB 75%),
-    -moz-linear-gradient(-45deg, transparent 75%, #BBB 75%);
-    background-image:
-    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.26, #BBB), color-stop(.26, transparent)),
-    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.26, #BBB), color-stop(.26, transparent)),
-    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.76, transparent), color-stop(.76, #BBB)),
-    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.76, transparent), color-stop(.76, #BBB));
-
-    -moz-background-size:64px 64px;
-    background-size:64px 64px;
-    -webkit-background-size: 64px 64px;
-    background-position: 0 0, 32px 0, 32px -32px, 0px 32px;
-
-}
-</style>

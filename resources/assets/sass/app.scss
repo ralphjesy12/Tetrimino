@@ -7,3 +7,58 @@
 
 // Bootstrap
 // @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+.stage{
+    width: 480px;
+    height: 640px;
+    border: 1px solid #bbb;
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+    background: #fff;
+
+    // Checkered BG
+    background-image:
+    -moz-linear-gradient(45deg, #BBB 25%, transparent 25%),
+    -moz-linear-gradient(-45deg, #BBB 25%, transparent 25%),
+    -moz-linear-gradient(45deg, transparent 75%, #BBB 75%),
+    -moz-linear-gradient(-45deg, transparent 75%, #BBB 75%);
+    background-image:
+    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.26, #BBB), color-stop(.26, transparent)),
+    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.26, #BBB), color-stop(.26, transparent)),
+    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.76, transparent), color-stop(.76, #BBB)),
+    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.76, transparent), color-stop(.76, #BBB));
+
+    -moz-background-size:64px 64px;
+    background-size:64px 64px;
+    -webkit-background-size: 64px 64px;
+    background-position: 0 0, 32px 0, 32px -32px, 0px 32px;
+
+}
+
+.mino{
+    position: absolute;
+
+    .tile{
+        position: absolute;
+        width: 32px;
+        height: 32px;
+    }
+
+    @mixin tileColor($image,$color){
+        .tile {
+            background: url($image),$color;
+            background-blend-mode: multiply;
+            background-size: cover;
+        }
+    }
+
+    &[data-kind="0"]{ @include tileColor("/img/mino.png",#008eff); }
+    &[data-kind="1"]{ @include tileColor("/img/mino.png",#00ff94); }
+    &[data-kind="2"]{ @include tileColor("/img/mino.png",#f1ff00); }
+    &[data-kind="3"]{ @include tileColor("/img/mino.png",#ff1818); }
+    &[data-kind="4"]{ @include tileColor("/img/mino.png",#ff00f9); }
+    &[data-kind="5"]{ @include tileColor("/img/mino.png",#bf00ff); }
+    &[data-kind="6"]{ @include tileColor("/img/mino.png",#bf00ff); }
+}
