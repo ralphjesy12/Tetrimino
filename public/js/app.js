@@ -302,6 +302,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                         console.log('Changing Mino');
                         self.createNewMino();
                         break;
+                    case 32:
+                        // Drop
+                        self.instantDrop();
+                        break;
                     case 37:
                         // Left
                         self.moveLeft();
@@ -342,7 +346,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.minos[this.active].x--;
             if (!this.checkCollisions()) {
                 this.revertState();
+                return false;
             }
+            return true;
         },
         moveRight: function moveRight() {
             console.log('Move Right');
@@ -350,7 +356,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.minos[this.active].x++;
             if (!this.checkCollisions()) {
                 this.revertState();
+                return false;
             }
+            return true;
         },
         moveDown: function moveDown() {
             console.log('Move Down');
@@ -360,7 +368,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 this.revertState();
                 this.addToBoard();
                 this.createNewMino();
+                return false;
             }
+            return true;
+        },
+        instantDrop: function instantDrop() {
+            console.log('Instant Drop');
+            while (this.moveDown()) {
+                console.log('Still safe');
+            }
+            console.log('Collided');
         },
         moveRotate: function moveRotate() {
             console.log('Rotate Mino');
@@ -368,7 +385,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             if (++this.minos[this.active].face > 3) this.minos[this.active].face = 0;
             if (!this.checkCollisions()) {
                 this.revertState();
+                return false;
             }
+            return true;
         },
         createNewMino: function createNewMino() {
             console.info('Creating Mino');
@@ -376,7 +395,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.minos = [];
             this.minos.push({
                 x: Math.floor(this.size.w / 2) - 2,
-                y: Math.floor(this.size.h / 2) - 2,
+                y: -3,
                 kind: this.getRandomInt(0, 7),
                 face: 0
             });
@@ -390,7 +409,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 for (var col = 0; col < activeMinoTiles[row].length; col++) {
                     if (activeMinoTiles[row][col]) {
 
-                        if (row + activeMino.y < 0 || col + activeMino.x < 0 || col + activeMino.x >= this.size.w) {
+                        if (col + activeMino.x < 0 || col + activeMino.x >= this.size.w) {
 
                             console.log('Mino Collided');
                             return false;
@@ -584,11 +603,17 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     attrs: {
       "data-kind": this.kind
     }
-  }, [_vm._l((this.tiles[this.kind][this.face]), function(tilerow, y) {
-    return [_vm._l((tilerow), function(tile, x) {
+  }, [_vm._l((this.tiles[this.kind][this.face]), function(tilerow, yy) {
+    return [_vm._l((tilerow), function(tile, xx) {
       return [(tile) ? [_c('div', {
+        directives: [{
+          name: "show",
+          rawName: "v-show",
+          value: ((yy + _vm.y) >= 0),
+          expression: "(yy+y)>=0"
+        }],
         staticClass: "tile",
-        style: (_vm.tileStyle(x, y))
+        style: (_vm.tileStyle(xx, yy))
       })] : _vm._e()]
     })]
   })], 2)

@@ -47,6 +47,9 @@ export default {
                     console.log('Changing Mino');
                     self.createNewMino();
                     break;
+                    case 32: // Drop
+                    self.instantDrop();
+                    break;
                     case 37: // Left
                     self.moveLeft();
                     break;
@@ -84,7 +87,9 @@ export default {
             this.minos[this.active].x--;
             if(!this.checkCollisions()){
                 this.revertState();
+                return false;
             }
+            return true;
         },
         moveRight(){
             console.log('Move Right');
@@ -92,7 +97,9 @@ export default {
             this.minos[this.active].x++;
             if(!this.checkCollisions()){
                 this.revertState();
+                return false;
             }
+            return true;
         },
         moveDown(){
             console.log('Move Down');
@@ -102,7 +109,16 @@ export default {
                 this.revertState();
                 this.addToBoard();
                 this.createNewMino();
+                return false;
             }
+            return true;
+        },
+        instantDrop(){
+            console.log('Instant Drop');
+            while(this.moveDown()){
+                console.log('Still safe');
+            }
+            console.log('Collided');
         },
         moveRotate(){
             console.log('Rotate Mino');
@@ -110,7 +126,9 @@ export default {
             if(++this.minos[this.active].face > 3) this.minos[this.active].face = 0;
             if(!this.checkCollisions()){
                 this.revertState();
+                return false;
             }
+            return true;
         },
         createNewMino(){
             console.info('Creating Mino');
@@ -118,7 +136,7 @@ export default {
             this.minos = [];
             this.minos.push({
                 x : Math.floor(this.size.w / 2) - 2,
-                y : Math.floor(this.size.h / 2) - 2,
+                y :  -3,
                 kind : this.getRandomInt(0,7),
                 face : 0
             });
@@ -132,7 +150,7 @@ export default {
                 for (var col = 0; col < activeMinoTiles[row].length; col++) {
                     if(activeMinoTiles[row][col]){
 
-                        if((row+activeMino.y < 0) || (col+activeMino.x < 0) || (col+activeMino.x >= this.size.w)){
+                        if((col+activeMino.x < 0) || (col+activeMino.x >= this.size.w)){
 
                             console.log('Mino Collided');
                             return false;

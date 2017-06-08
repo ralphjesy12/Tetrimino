@@ -1,9 +1,9 @@
 <template lang="html">
     <div class="mino" :style="minoStyle(x,y)" :data-kind="this.kind">
-        <template v-for="(tilerow,y) in this.tiles[this.kind][this.face]">
-            <template v-for="(tile,x) in tilerow">
+        <template v-for="(tilerow,yy) in this.tiles[this.kind][this.face]">
+            <template v-for="(tile,xx) in tilerow">
                 <template v-if="tile">
-                    <div class="tile" :style="tileStyle(x,y)"></div>
+                    <div v-show="(yy+y)>=0" class="tile" :style="tileStyle(xx,yy)"></div>
                 </template>
             </template>
         </template>
