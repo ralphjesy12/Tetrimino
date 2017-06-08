@@ -16,7 +16,7 @@ window.Vue = require('vue');
  */
 
 Vue.component('stage', require('./components/Stage.vue'));
-
+Vue.component('game-controls', require('./components/GameControls.vue'));
 const app = new Vue({
-    el: '#app'
+    el: '#app',
 });

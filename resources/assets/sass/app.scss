@@ -76,7 +76,7 @@
         position: absolute;
         width: 32px;
         height: 32px;
-        
+
         &[data-kind="0"]{ @include tileColorSelf("/img/mino.png",#008eff); }
         &[data-kind="1"]{ @include tileColorSelf("/img/mino.png",#00ff94); }
         &[data-kind="2"]{ @include tileColorSelf("/img/mino.png",#f1ff00); }
@@ -84,5 +84,19 @@
         &[data-kind="4"]{ @include tileColorSelf("/img/mino.png",#ff00f9); }
         &[data-kind="5"]{ @include tileColorSelf("/img/mino.png",#bf00ff); }
         &[data-kind="6"]{ @include tileColorSelf("/img/mino.png",#bf00ff); }
+    }
+}
+
+
+.content{
+    &.is-dark{
+        &,.title{
+            color: #f5f5f5;
+        }
+    }
+    .key-tag{
+        height: 1rem;
+        font-size: .75rem;
+        width: 3rem;
     }
 }

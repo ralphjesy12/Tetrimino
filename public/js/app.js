@@ -147,7 +147,7 @@ window.Vue = __webpack_require__(17);
  */
 
 Vue.component('stage', __webpack_require__(11));
-
+Vue.component('game-controls', __webpack_require__(25));
 var app = new Vue({
   el: '#app'
 });
@@ -248,9 +248,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Mino_vue__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Mino_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__Mino_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Tiles_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Events_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Mino_vue__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Mino_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__Mino_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Tiles_js__ = __webpack_require__(22);
 //
 //
 //
@@ -260,6 +261,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+
 
 
 
@@ -300,32 +302,46 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         registerKeyboardMapping: function registerKeyboardMapping() {
             console.info('Registering Keyboard Maps');
             var self = this;
+
+            window.addEventListener('keyup', function (event) {
+                event.preventDefault();
+                __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('gameHasKeyUp', event.keyCode);
+            });
             window.addEventListener('keydown', function (event) {
                 event.preventDefault();
+
+                __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('gameHasKeyDown', event.keyCode);
+
                 switch (event.keyCode) {
                     case 67:
                         // C
                         console.log('Changing Mino');
+                        if (self.game.isPaused || self.game.isOver) return false;
                         self.createNewMino();
                         break;
                     case 32:
                         // Drop
+                        if (self.game.isPaused || self.game.isOver) return false;
                         self.instantDrop();
                         break;
                     case 37:
                         // Left
+                        if (self.game.isPaused || self.game.isOver) return false;
                         self.moveLeft();
                         break;
                     case 38:
                         // Rotate
+                        if (self.game.isPaused || self.game.isOver) return false;
                         self.moveRotate();
                         break;
                     case 39:
                         // Right
+                        if (self.game.isPaused || self.game.isOver) return false;
                         self.moveRight();
                         break;
                     case 40:
                         // Down
+                        if (self.game.isPaused || self.game.isOver) return false;
                         self.moveDown();
                         break;
                     default:
@@ -341,12 +357,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             };
         },
         revertState: function revertState() {
+            console.log('Reverting State');
             if (this.lastState !== null) {
                 this.minos[this.active] = this.lastState;
                 this.lastState = null;
             }
         },
         moveLeft: function moveLeft() {
+            if (this.game.isOver) return false;
             console.log('Move Left');
             this.saveState();
             this.minos[this.active].x--;
@@ -357,6 +375,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             return true;
         },
         moveRight: function moveRight() {
+            if (this.game.isOver) return false;
             console.log('Move Right');
             this.saveState();
             this.minos[this.active].x++;
@@ -367,7 +386,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             return true;
         },
         moveDown: function moveDown() {
+            if (this.game.isOver) return false;
             console.log('Move Down');
+
             this.saveState();
             this.minos[this.active].y++;
             if (!this.checkCollisions()) {
@@ -379,6 +400,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             return true;
         },
         instantDrop: function instantDrop() {
+            if (this.game.isOver) return false;
             console.log('Instant Drop');
             while (this.moveDown()) {
                 console.log('Still safe');
@@ -386,6 +408,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             console.log('Collided');
         },
         moveRotate: function moveRotate() {
+            if (this.game.isOver) return false;
             console.log('Rotate Mino');
             this.saveState();
             if (++this.minos[this.active].face > 3) this.minos[this.active].face = 0;
@@ -396,7 +419,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             return true;
         },
         createNewMino: function createNewMino() {
+
+            if (this.game.isOver) return false;
+
             console.info('Creating Mino');
+
             this.lastState = null;
             this.minos = [];
             this.minos.push({
@@ -408,22 +435,32 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.active = this.minos.length - 1;
         },
         checkCollisions: function checkCollisions() {
+            if (this.game.isOver) return false;
             console.info('Checking collisions');
+
             var activeMino = this.minos[this.active];
-            var activeMinoTiles = __WEBPACK_IMPORTED_MODULE_1__Tiles_js__["a" /* default */][activeMino.kind][activeMino.face];
+            var activeMinoTiles = __WEBPACK_IMPORTED_MODULE_2__Tiles_js__["a" /* default */][activeMino.kind][activeMino.face];
             for (var row = 0; row < activeMinoTiles.length; row++) {
                 for (var col = 0; col < activeMinoTiles[row].length; col++) {
                     if (activeMinoTiles[row][col]) {
 
                         if (col + activeMino.x < 0 || col + activeMino.x >= this.size.w) {
 
-                            console.log('Mino Collided');
+                            console.log('Mino will collide with Board');
                             return false;
                         }
 
                         if (row + activeMino.y >= this.size.h) {
-
+                            console.log('Mino will reach Bottom');
                             // Block Reached the Bottom of the Board
+                            return false;
+                        }
+
+                        if (row + activeMino.y < 0 && !this.moveDown()) {
+                            // try to move down
+                            console.log('Mino Overflowed');
+                            this.stopGame();
+
                             return false;
                         }
 
@@ -433,6 +470,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
                             if (row + activeMino.y == this.onboard[i].y && col + activeMino.x == this.onboard[i].x) {
                                 // Mino Collided with Onboard Tile
+                                console.log('Mino will collide with a Tile');
                                 return false;
                             }
                         }
@@ -444,7 +482,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         },
         addToBoard: function addToBoard() {
             var activeMino = this.minos[this.active];
-            var activeMinoTiles = __WEBPACK_IMPORTED_MODULE_1__Tiles_js__["a" /* default */][activeMino.kind][activeMino.face];
+            var activeMinoTiles = __WEBPACK_IMPORTED_MODULE_2__Tiles_js__["a" /* default */][activeMino.kind][activeMino.face];
             for (var row = 0; row < activeMinoTiles.length; row++) {
                 for (var col = 0; col < activeMinoTiles[row].length; col++) {
                     if (activeMinoTiles[row][col]) {
@@ -456,10 +494,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     }
                 }
             }
+        },
+        stopGame: function stopGame() {
+            clearInterval(this.game.timerInterval);
+            this.game.isOver = true;
+            console.log('Game is Over');
         }
     },
     components: {
-        mino: __WEBPACK_IMPORTED_MODULE_0__Mino_vue___default.a
+        mino: __WEBPACK_IMPORTED_MODULE_1__Mino_vue___default.a
     },
     mounted: function mounted() {
         var self = this;
@@ -469,12 +512,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         self.createNewMino();
 
         self.game.timerInterval = setInterval(function () {
-
             if (self.game.isPaused || self.game.isOver) {
                 clearInterval(self.game.timerInterval);
+            } else {
+                self.moveDown();
             }
-
-            self.moveDown();
         }, self.game.speed);
     }
 });
@@ -10432,6 +10474,132 @@ module.exports = __webpack_require__(4);
 
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ([[[[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0]], [[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0]]], [[[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0]]], [[[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 1]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 1], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 1], [0, 1, 1, 1], [0, 0, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 1, 1, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 1], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 1], [0, 0, 0, 1]]], [[[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]], [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]]]]);
+
+/***/ }),
+/* 23 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = (new Vue());
+
+/***/ }),
+/* 24 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Events_js__ = __webpack_require__(23);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            keydown: null
+        };
+    },
+
+    methods: {
+        isPressed: function isPressed(keycode) {
+            return { 'is-warning': this.keydown == keycode };
+        }
+    },
+    created: function created() {
+        var self = this;
+        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyDown', function (keyCode) {
+            self.keydown = keyCode;
+        });
+
+        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyUp', function (keyCode) {
+            self.keydown = null;
+        });
+    }
+});
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(24),
+  /* template */
+  __webpack_require__(26),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "/Applications/MAMP/htdocs/Tetrimino/resources/assets/js/components/GameControls.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] GameControls.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-9a47f672", Component.options)
+  } else {
+    hotAPI.reload("data-v-9a47f672", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "content has-text-left is-dark is-small"
+  }, [_c('h2', {
+    staticClass: "title"
+  }, [_vm._v("Game Controls")]), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(38)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-up"
+  })]), _vm._v(" ROTATE MINO"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(40)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-down"
+  })]), _vm._v(" MOVE DOWN"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(37)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-left"
+  })]), _vm._v(" MOVE LEFT"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(39)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-right"
+  })]), _vm._v(" MOVE RIGHT"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white key-tag",
+    class: _vm.isPressed(32)
+  }, [_c('small', [_vm._v("SPACE")])]), _vm._v(" DROP"), _c('br')])
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-9a47f672", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);

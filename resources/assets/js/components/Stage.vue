@@ -9,6 +9,7 @@
 
 <script>
 
+import Events from './Events.js';
 import mino from './Mino.vue';
 import tiles from './Tiles.js'
 
@@ -46,26 +47,40 @@ export default {
         registerKeyboardMapping(){
             console.info('Registering Keyboard Maps');
             var self = this;
+
+            window.addEventListener('keyup', function(event) {
+                event.preventDefault();
+                Events.$emit('gameHasKeyUp',event.keyCode);
+            });
             window.addEventListener('keydown', function(event) {
                 event.preventDefault();
+
+                Events.$emit('gameHasKeyDown',event.keyCode);
+
                 switch (event.keyCode) {
                     case 67:  // C
                     console.log('Changing Mino');
+                    if(self.game.isPaused || self.game.isOver) return false;
                     self.createNewMino();
                     break;
                     case 32: // Drop
+                    if(self.game.isPaused || self.game.isOver) return false;
                     self.instantDrop();
                     break;
                     case 37: // Left
+                    if(self.game.isPaused || self.game.isOver) return false;
                     self.moveLeft();
                     break;
                     case 38: // Rotate
+                    if(self.game.isPaused || self.game.isOver) return false;
                     self.moveRotate();
                     break;
                     case 39: // Right
+                    if(self.game.isPaused || self.game.isOver) return false;
                     self.moveRight();
                     break;
                     case 40: // Down
+                    if(self.game.isPaused || self.game.isOver) return false;
                     self.moveDown();
                     break;
                     default:
@@ -82,12 +97,14 @@ export default {
             };
         },
         revertState(){
+            console.log('Reverting State');
             if(this.lastState !== null){
                 this.minos[this.active] = this.lastState;
                 this.lastState = null;
             }
         },
         moveLeft(){
+            if(this.game.isOver) return false;
             console.log('Move Left');
             this.saveState();
             this.minos[this.active].x--;
@@ -98,6 +115,7 @@ export default {
             return true;
         },
         moveRight(){
+            if(this.game.isOver) return false;
             console.log('Move Right');
             this.saveState();
             this.minos[this.active].x++;
@@ -108,7 +126,9 @@ export default {
             return true;
         },
         moveDown(){
+            if(this.game.isOver) return false;
             console.log('Move Down');
+
             this.saveState();
             this.minos[this.active].y++;
             if(!this.checkCollisions()){
@@ -120,6 +140,7 @@ export default {
             return true;
         },
         instantDrop(){
+            if(this.game.isOver) return false;
             console.log('Instant Drop');
             while(this.moveDown()){
                 console.log('Still safe');
@@ -127,6 +148,7 @@ export default {
             console.log('Collided');
         },
         moveRotate(){
+            if(this.game.isOver) return false;
             console.log('Rotate Mino');
             this.saveState();
             if(++this.minos[this.active].face > 3) this.minos[this.active].face = 0;
@@ -137,7 +159,11 @@ export default {
             return true;
         },
         createNewMino(){
+
+            if(this.game.isOver) return false;
+
             console.info('Creating Mino');
+
             this.lastState = null;
             this.minos = [];
             this.minos.push({
@@ -149,7 +175,9 @@ export default {
             this.active = this.minos.length - 1;
         },
         checkCollisions(){
+            if(this.game.isOver) return false;
             console.info('Checking collisions');
+
             var activeMino = this.minos[this.active];
             var activeMinoTiles = tiles[activeMino.kind][activeMino.face];
             for (var row = 0; row < activeMinoTiles.length; row++) {
@@ -158,14 +186,23 @@ export default {
 
                         if((col+activeMino.x < 0) || (col+activeMino.x >= this.size.w)){
 
-                            console.log('Mino Collided');
+                            console.log('Mino will collide with Board');
                             return false;
 
                         }
 
                         if((row+activeMino.y >= this.size.h)){
-
+                            console.log('Mino will reach Bottom');
                             // Block Reached the Bottom of the Board
+                            return false;
+
+                        }
+
+                        if((row+activeMino.y < 0) && !this.moveDown()){
+                            // try to move down
+                            console.log('Mino Overflowed');
+                            this.stopGame();
+
                             return false;
 
                         }
@@ -176,6 +213,7 @@ export default {
 
                             if((row+activeMino.y == this.onboard[i].y) && (col+activeMino.x == this.onboard[i].x)){
                                 // Mino Collided with Onboard Tile
+                                console.log('Mino will collide with a Tile');
                                 return false;
 
                             }
@@ -201,6 +239,11 @@ export default {
                     }
                 }
             }
+        },
+        stopGame(){
+            clearInterval(this.game.timerInterval);
+            this.game.isOver = true;
+            console.log('Game is Over');
         }
     },
     components : {
@@ -214,13 +257,11 @@ export default {
         self.createNewMino();
 
         self.game.timerInterval = setInterval(function(){
-
             if(self.game.isPaused || self.game.isOver){
                 clearInterval(self.game.timerInterval);
+            }else{
+                self.moveDown();
             }
-
-            self.moveDown();
-
         },self.game.speed);
 
     }
