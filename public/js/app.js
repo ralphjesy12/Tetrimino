@@ -290,7 +290,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     case 67:
                         // C
                         console.log('Changing Mino');
-                        self.minos = [];
                         self.createNewMino();
                         break;
                     case 37:
@@ -368,6 +367,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 kind: this.getRandomInt(0, 7),
                 face: 0
             });
+            this.active = this.minos.length - 1;
         },
         checkCollisions: function checkCollisions() {
             console.info('Checking collisions');
@@ -376,8 +376,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             for (var row = 0; row < activeMinoTiles.length; row++) {
                 for (var col = 0; col < activeMinoTiles[row].length; col++) {
                     if (activeMinoTiles[row][col]) {
-                        if (row + activeMino.y < 0 || col + activeMino.x < 0 || row + activeMino.y >= this.size.h || col + activeMino.x >= this.size.w) {
+
+                        if (row + activeMino.y < 0 || col + activeMino.x < 0 || col + activeMino.x >= this.size.w) {
+
                             console.log('Mino Collided');
+                            return false;
+                        }
+
+                        if (row + activeMino.y >= this.size.h) {
+
+                            // Block Reached the Bottom of the Board
+                            this.revertState();
+                            this.createNewMino();
+                            this.active++;
                             return false;
                         }
                     }
