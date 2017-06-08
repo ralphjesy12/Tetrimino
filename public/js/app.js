@@ -268,6 +268,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
+            game: {
+                isPaused: false,
+                isOver: false,
+                speed: 1000,
+                timerInterval: null
+            },
             size: {
                 w: 15,
                 h: 20
@@ -397,7 +403,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 x: Math.floor(this.size.w / 2) - 2,
                 y: -3,
                 kind: this.getRandomInt(0, 7),
-                face: 0
+                face: this.getRandomInt(0, 4)
             });
             this.active = this.minos.length - 1;
         },
@@ -461,6 +467,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         self.minos = [];
         self.registerKeyboardMapping();
         self.createNewMino();
+
+        self.game.timerInterval = setInterval(function () {
+
+            if (self.game.isPaused || self.game.isOver) {
+                clearInterval(self.game.timerInterval);
+            }
+
+            self.moveDown();
+        }, self.game.speed);
     }
 });
 
@@ -641,6 +656,12 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     })
   }, _vm._l((this.onboard), function(mino, index) {
     return _c('div', {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: (mino.y >= 0),
+        expression: "mino.y>=0"
+      }],
       staticClass: "tile onboard",
       style: (_vm.tileStyle(mino.x, mino.y)),
       attrs: {

@@ -1,7 +1,7 @@
 <template lang="html">
     <div class="stage">
         <div class="onboardtiles" :style="{ width : this.size.w * 32 + 'px' , height : this.size.h * 32 + 'px'  }">
-            <div  v-for="(mino,index) in this.onboard" class="tile onboard" :data-kind="mino.kind" :style="tileStyle(mino.x,mino.y)"></div>
+            <div v-for="(mino,index) in this.onboard" class="tile onboard" :data-kind="mino.kind" :style="tileStyle(mino.x,mino.y)" v-show="mino.y>=0"></div>
         </div>
         <mino v-for="(mino,index) in this.minos" :x=mino.x :y=mino.y :kind=mino.kind :face=mino.face :key="mino.id" ></mino>
     </div>
@@ -15,6 +15,12 @@ import tiles from './Tiles.js'
 export default {
     data(){
         return {
+            game : {
+                isPaused : false,
+                isOver : false,
+                speed : 1000,
+                timerInterval : null
+            },
             size : {
                 w : 15,
                 h : 20
@@ -138,7 +144,7 @@ export default {
                 x : Math.floor(this.size.w / 2) - 2,
                 y :  -3,
                 kind : this.getRandomInt(0,7),
-                face : 0
+                face : this.getRandomInt(0,4)
             });
             this.active = this.minos.length - 1;
         },
@@ -206,6 +212,16 @@ export default {
         self.minos = [];
         self.registerKeyboardMapping();
         self.createNewMino();
+
+        self.game.timerInterval = setInterval(function(){
+
+            if(self.game.isPaused || self.game.isOver){
+                clearInterval(self.game.timerInterval);
+            }
+
+            self.moveDown();
+
+        },self.game.speed);
 
     }
 }
