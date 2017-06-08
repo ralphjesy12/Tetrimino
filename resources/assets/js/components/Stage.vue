@@ -17,7 +17,7 @@ export default {
     data(){
         return {
             game : {
-                isPaused : false,
+                isPaused : true,
                 isOver : false,
                 speed : 1000,
                 timerInterval : null
@@ -244,6 +244,48 @@ export default {
             clearInterval(this.game.timerInterval);
             this.game.isOver = true;
             console.log('Game is Over');
+        },
+        pauseGame(){
+            clearInterval(this.game.timerInterval);
+            this.game.isPaused = true;
+        },
+        continueGame(){
+            var self = this;
+            this.game.isPaused = false;
+            this.game.timerInterval = setInterval(function(){
+                if(self.game.isPaused || self.game.isOver){
+                    clearInterval(self.game.timerInterval);
+                }else{
+                    self.moveDown();
+                }
+            },this.game.speed);
+        },
+        startGame(){
+            var self = this;
+            this.minos = [];
+            this.onboard = [];
+            this.active = 0;
+            this.createNewMino();
+            this.game.isPaused = false;
+            this.game.timerInterval = setInterval(function(){
+                if(self.game.isPaused || self.game.isOver){
+                    clearInterval(self.game.timerInterval);
+                }else{
+                    self.moveDown();
+                }
+            },this.game.speed);
+        },
+        registerEvents(){
+            var self = this;
+            Events.$on('startGame',function(){
+                self.startGame();
+            });
+            Events.$on('pauseGame',function(){
+                self.pauseGame();
+            });
+            Events.$on('continueGame',function(){
+                self.continueGame();
+            });
         }
     },
     components : {
@@ -252,18 +294,9 @@ export default {
     mounted(){
         var self = this;
         // Create one mino on center
-        self.minos = [];
+
         self.registerKeyboardMapping();
-        self.createNewMino();
-
-        self.game.timerInterval = setInterval(function(){
-            if(self.game.isPaused || self.game.isOver){
-                clearInterval(self.game.timerInterval);
-            }else{
-                self.moveDown();
-            }
-        },self.game.speed);
-
+        self.registerEvents();
     }
 }
 </script>

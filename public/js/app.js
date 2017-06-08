@@ -271,7 +271,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {
             game: {
-                isPaused: false,
+                isPaused: true,
                 isOver: false,
                 speed: 1000,
                 timerInterval: null
@@ -499,6 +499,48 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             clearInterval(this.game.timerInterval);
             this.game.isOver = true;
             console.log('Game is Over');
+        },
+        pauseGame: function pauseGame() {
+            clearInterval(this.game.timerInterval);
+            this.game.isPaused = true;
+        },
+        continueGame: function continueGame() {
+            var self = this;
+            this.game.isPaused = false;
+            this.game.timerInterval = setInterval(function () {
+                if (self.game.isPaused || self.game.isOver) {
+                    clearInterval(self.game.timerInterval);
+                } else {
+                    self.moveDown();
+                }
+            }, this.game.speed);
+        },
+        startGame: function startGame() {
+            var self = this;
+            this.minos = [];
+            this.onboard = [];
+            this.active = 0;
+            this.createNewMino();
+            this.game.isPaused = false;
+            this.game.timerInterval = setInterval(function () {
+                if (self.game.isPaused || self.game.isOver) {
+                    clearInterval(self.game.timerInterval);
+                } else {
+                    self.moveDown();
+                }
+            }, this.game.speed);
+        },
+        registerEvents: function registerEvents() {
+            var self = this;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('startGame', function () {
+                self.startGame();
+            });
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('pauseGame', function () {
+                self.pauseGame();
+            });
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('continueGame', function () {
+                self.continueGame();
+            });
         }
     },
     components: {
@@ -507,17 +549,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     mounted: function mounted() {
         var self = this;
         // Create one mino on center
-        self.minos = [];
-        self.registerKeyboardMapping();
-        self.createNewMino();
 
-        self.game.timerInterval = setInterval(function () {
-            if (self.game.isPaused || self.game.isOver) {
-                clearInterval(self.game.timerInterval);
-            } else {
-                self.moveDown();
-            }
-        }, self.game.speed);
+        self.registerKeyboardMapping();
+        self.registerEvents();
     }
 });
 
@@ -10499,11 +10533,72 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
+            game: {
+                isStarted: false,
+                isPaused: true,
+                isOver: false
+            },
             keydown: null
         };
     },
@@ -10511,10 +10606,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     methods: {
         isPressed: function isPressed(keycode) {
             return { 'is-warning': this.keydown == keycode };
+        },
+        startGame: function startGame() {
+            this.game.isStarted = true;
+            this.game.isPaused = false;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('startGame');
+        },
+        continueGame: function continueGame() {
+            this.game.isPaused = false;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('continueGame');
+        },
+        pauseGame: function pauseGame() {
+            this.game.isPaused = true;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('pauseGame');
         }
     },
     created: function created() {
         var self = this;
+
         __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyDown', function (keyCode) {
             self.keydown = keyCode;
         });
@@ -10566,9 +10675,42 @@ module.exports = Component.exports
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
     staticClass: "content has-text-left is-dark is-small"
-  }, [_c('h2', {
+  }, [_vm._m(0), _vm._v(" "), _c('h2', {
     staticClass: "title"
   }, [_vm._v("Game Controls")]), _vm._v(" "), _c('div', {
+    staticClass: "columns"
+  }, [_c('div', {
+    staticClass: "column"
+  }, [_c('div', {
+    staticClass: "field has-addons"
+  }, [_c('p', {
+    staticClass: "control"
+  }, [(!_vm.game.isStarted) ? _c('a', {
+    staticClass: "button",
+    on: {
+      "click": _vm.startGame
+    }
+  }, [_vm._m(1), _vm._v(" "), _c('span', [_vm._v("Start")])]) : _vm._e(), _vm._v(" "), (_vm.game.isStarted) ? _c('a', {
+    staticClass: "button",
+    attrs: {
+      "disabled": !_vm.game.isPaused
+    },
+    on: {
+      "click": _vm.continueGame
+    }
+  }, [_vm._m(2), _vm._v(" "), _c('span', [_vm._v("Continue")])]) : _vm._e()]), _vm._v(" "), _c('p', {
+    staticClass: "control"
+  }, [_c('a', {
+    staticClass: "button",
+    attrs: {
+      "disabled": (_vm.game.isPaused || !_vm.game.isStarted)
+    },
+    on: {
+      "click": _vm.pauseGame
+    }
+  }, [_vm._m(3), _vm._v(" "), _c('span', [_vm._v("Pause")])])])])]), _vm._v(" "), _c('div', {
+    staticClass: "column"
+  }, [_c('div', {
     staticClass: "tag is-white icon is-small key-tag",
     class: this.isPressed(38)
   }, [_c('i', {
@@ -10591,8 +10733,54 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   })]), _vm._v(" MOVE RIGHT"), _c('br'), _vm._v(" "), _c('div', {
     staticClass: "tag is-white key-tag",
     class: _vm.isPressed(32)
-  }, [_c('small', [_vm._v("SPACE")])]), _vm._v(" DROP"), _c('br')])
-},staticRenderFns: []}
+  }, [_c('small', [_vm._v("SPACE")])]), _vm._v(" DROP"), _c('br')])])])
+},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('nav', {
+    staticClass: "level is-mobile"
+  }, [_c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Time Elapsed")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("01:30")])])]), _vm._v(" "), _c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Time Left")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("00:34")])])]), _vm._v(" "), _c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Lines Sent")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("456K")])])]), _vm._v(" "), _c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Score")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("789")])])])])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('span', {
+    staticClass: "icon is-small"
+  }, [_c('i', {
+    staticClass: "fa fa-play"
+  })])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('span', {
+    staticClass: "icon is-small"
+  }, [_c('i', {
+    staticClass: "fa fa-play"
+  })])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('span', {
+    staticClass: "icon is-small"
+  }, [_c('i', {
+    staticClass: "fa fa-pause"
+  })])
+}]}
 module.exports.render._withStripped = true
 if (false) {
   module.hot.accept()
