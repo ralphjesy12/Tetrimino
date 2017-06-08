@@ -1,6 +1,9 @@
 <template lang="html">
     <div class="stage">
-        <mino v-for="(mino,index) in this.minos" :x=mino.x :y=mino.y :kind=mino.kind :face=mino.face :key="mino.id"></mino>
+        <div class="onboardtiles" :style="{ width : this.size.w * 32 + 'px' , height : this.size.h * 32 + 'px'  }">
+            <div  v-for="(mino,index) in this.onboard" class="tile onboard" :data-kind="mino.kind" :style="tileStyle(mino.x,mino.y)"></div>
+        </div>
+        <mino v-for="(mino,index) in this.minos" :x=mino.x :y=mino.y :kind=mino.kind :face=mino.face :key="mino.id" ></mino>
     </div>
 </template>
 
@@ -17,11 +20,18 @@ export default {
                 h : 20
             },
             minos : [],
+            onboard : [],
             active : 0,
             lastState : null
         }
     },
     methods: {
+        tileStyle(x,y){
+            return {
+                top : (y * 32) + 'px',
+                left : (x * 32) + 'px',
+            }
+        },
         getRandomInt(min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
@@ -90,6 +100,8 @@ export default {
             this.minos[this.active].y++;
             if(!this.checkCollisions()){
                 this.revertState();
+                this.addToBoard();
+                this.createNewMino();
             }
         },
         moveRotate(){
@@ -103,6 +115,7 @@ export default {
         createNewMino(){
             console.info('Creating Mino');
             this.lastState = null;
+            this.minos = [];
             this.minos.push({
                 x : Math.floor(this.size.w / 2) - 2,
                 y : Math.floor(this.size.h / 2) - 2,
@@ -129,11 +142,19 @@ export default {
                         if((row+activeMino.y >= this.size.h)){
 
                             // Block Reached the Bottom of the Board
-                            this.revertState();
-                            this.createNewMino();
-                            this.active++;
                             return false;
 
+                        }
+
+                        // Check if mino, hits one from the onboard tiles
+
+                        for (var i = 0; i < this.onboard.length; i++) {
+
+                            if((row+activeMino.y == this.onboard[i].y) && (col+activeMino.x == this.onboard[i].x)){
+                                // Mino Collided with Onboard Tile
+                                return false;
+
+                            }
                         }
 
                     }
@@ -141,6 +162,21 @@ export default {
             }
             console.log('Mino Safe');
             return true;
+        },
+        addToBoard(){
+            var activeMino = this.minos[this.active];
+            var activeMinoTiles = tiles[activeMino.kind][activeMino.face];
+            for (var row = 0; row < activeMinoTiles.length; row++) {
+                for (var col = 0; col < activeMinoTiles[row].length; col++) {
+                    if(activeMinoTiles[row][col]){
+                        this.onboard.push({
+                            x: col+activeMino.x,
+                            y: row+activeMino.y,
+                            kind: activeMino.kind
+                        });
+                    }
+                }
+            }
         }
     },
     components : {

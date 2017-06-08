@@ -62,3 +62,27 @@
     &[data-kind="5"]{ @include tileColor("/img/mino.png",#bf00ff); }
     &[data-kind="6"]{ @include tileColor("/img/mino.png",#bf00ff); }
 }
+
+.onboardtiles{
+    position: absolute;
+
+    @mixin tileColorSelf($image,$color){
+        background: url($image),$color;
+        background-blend-mode: multiply;
+        background-size: cover;
+    }
+
+    .tile{
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        
+        &[data-kind="0"]{ @include tileColorSelf("/img/mino.png",#008eff); }
+        &[data-kind="1"]{ @include tileColorSelf("/img/mino.png",#00ff94); }
+        &[data-kind="2"]{ @include tileColorSelf("/img/mino.png",#f1ff00); }
+        &[data-kind="3"]{ @include tileColorSelf("/img/mino.png",#ff1818); }
+        &[data-kind="4"]{ @include tileColorSelf("/img/mino.png",#ff00f9); }
+        &[data-kind="5"]{ @include tileColorSelf("/img/mino.png",#bf00ff); }
+        &[data-kind="6"]{ @include tileColorSelf("/img/mino.png",#bf00ff); }
+    }
+}

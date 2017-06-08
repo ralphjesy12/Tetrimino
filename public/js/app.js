@@ -257,6 +257,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 
 
@@ -270,12 +273,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 h: 20
             },
             minos: [],
+            onboard: [],
             active: 0,
             lastState: null
         };
     },
 
     methods: {
+        tileStyle: function tileStyle(x, y) {
+            return {
+                top: y * 32 + 'px',
+                left: x * 32 + 'px'
+            };
+        },
         getRandomInt: function getRandomInt(min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
@@ -348,6 +358,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.minos[this.active].y++;
             if (!this.checkCollisions()) {
                 this.revertState();
+                this.addToBoard();
+                this.createNewMino();
             }
         },
         moveRotate: function moveRotate() {
@@ -361,6 +373,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         createNewMino: function createNewMino() {
             console.info('Creating Mino');
             this.lastState = null;
+            this.minos = [];
             this.minos.push({
                 x: Math.floor(this.size.w / 2) - 2,
                 y: Math.floor(this.size.h / 2) - 2,
@@ -386,16 +399,38 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                         if (row + activeMino.y >= this.size.h) {
 
                             // Block Reached the Bottom of the Board
-                            this.revertState();
-                            this.createNewMino();
-                            this.active++;
                             return false;
+                        }
+
+                        // Check if mino, hits one from the onboard tiles
+
+                        for (var i = 0; i < this.onboard.length; i++) {
+
+                            if (row + activeMino.y == this.onboard[i].y && col + activeMino.x == this.onboard[i].x) {
+                                // Mino Collided with Onboard Tile
+                                return false;
+                            }
                         }
                     }
                 }
             }
             console.log('Mino Safe');
             return true;
+        },
+        addToBoard: function addToBoard() {
+            var activeMino = this.minos[this.active];
+            var activeMinoTiles = __WEBPACK_IMPORTED_MODULE_1__Tiles_js__["a" /* default */][activeMino.kind][activeMino.face];
+            for (var row = 0; row < activeMinoTiles.length; row++) {
+                for (var col = 0; col < activeMinoTiles[row].length; col++) {
+                    if (activeMinoTiles[row][col]) {
+                        this.onboard.push({
+                            x: col + activeMino.x,
+                            y: row + activeMino.y,
+                            kind: activeMino.kind
+                        });
+                    }
+                }
+            }
         }
     },
     components: {
@@ -573,7 +608,21 @@ if (false) {
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
     staticClass: "stage"
-  }, _vm._l((this.minos), function(mino, index) {
+  }, [_c('div', {
+    staticClass: "onboardtiles",
+    style: ({
+      width: this.size.w * 32 + 'px',
+      height: this.size.h * 32 + 'px'
+    })
+  }, _vm._l((this.onboard), function(mino, index) {
+    return _c('div', {
+      staticClass: "tile onboard",
+      style: (_vm.tileStyle(mino.x, mino.y)),
+      attrs: {
+        "data-kind": mino.kind
+      }
+    })
+  })), _vm._v(" "), _vm._l((this.minos), function(mino, index) {
     return _c('mino', {
       key: mino.id,
       attrs: {
@@ -583,7 +632,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
         "face": mino.face
       }
     })
-  }))
+  })], 2)
 },staticRenderFns: []}
 module.exports.render._withStripped = true
 if (false) {
