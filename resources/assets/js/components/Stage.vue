@@ -1,7 +1,7 @@
 <template lang="html">
     <div class="stage">
         <div class="onboardtiles" :style="{ width : this.size.w * 32 + 'px' , height : this.size.h * 32 + 'px'  }">
-            <div v-for="(mino,index) in this.onboard" class="tile onboard" :data-kind="mino.kind" :style="tileStyle(mino.x,mino.y)" v-show="mino.y>=0"></div>
+            <div v-for="(mino,index) in this.onboard" class="tile onboard" :data-kind="mino.kind" :style="tileStyle(mino.x,mino.y)" v-show="mino.y>=0" :class="{ 'pulse' : mino.sent }"></div>
         </div>
         <mino v-for="(mino,index) in this.minos" :x=mino.x :y=mino.y :kind=mino.kind :face=mino.face :key="mino.id" ></mino>
     </div>
@@ -223,6 +223,8 @@ export default {
                 }
             }
             console.log('Mino Safe');
+
+
             return true;
         },
         addToBoard(){
@@ -239,10 +241,63 @@ export default {
                     }
                 }
             }
+
+            // After adding to board, check for a complete line
+            console.log('Check lines');
+            this.checkLines();
+        },
+        checkLines(){
+            var self = this;
+            var row = [];
+            for (let i = 0; i < this.onboard.length; i++) {
+                if(typeof row[this.onboard[i].y] == 'undefined')
+                    row[this.onboard[i].y] = 0;
+                row[this.onboard[i].y]++;
+            }
+
+            var linesremoved = [];
+            for (let i = 0; i < row.length; i++) {
+                if(typeof row[i]!= 'undefined' && row[i] == this.size.w){
+                    linesremoved.push(i);
+                    this.clearLine(i);
+                }
+            }
+
+            if(linesremoved.length > 0){
+                setTimeout(function() {
+                    for (var j = 0; j < linesremoved.length; j++) {
+                        for (let i = 0; i < self.onboard.length; i++) {
+                            if(self.onboard[i].y < (linesremoved[j] + j))
+                                self.onboard[i].y++;
+                        }
+                    }
+                },1000);
+            }
+
+        },
+        clearLine(row){
+            var self = this;
+            for (var i = 0; i < this.onboard.length; i++) {
+                if(this.onboard[i].y == row){
+                    this.onboard[i].sent = true;
+                }
+            }
+
+            setTimeout(function(){
+
+                for (var i = self.onboard.length - 1; i >= 0; i--) {
+                    if(self.onboard[i].sent && self.onboard[i].sent == true){
+                        self.onboard.splice(i,1);
+                    }
+                }
+
+            },1000);
         },
         stopGame(){
             clearInterval(this.game.timerInterval);
             this.game.isOver = true;
+            this.game.isPaused = false;
+            Events.$emit('gameHasStopped');
             console.log('Game is Over');
         },
         pauseGame(){
@@ -265,8 +320,9 @@ export default {
             this.minos = [];
             this.onboard = [];
             this.active = 0;
-            this.createNewMino();
             this.game.isPaused = false;
+            this.game.isOver = false;
+            this.createNewMino();
             this.game.timerInterval = setInterval(function(){
                 if(self.game.isPaused || self.game.isOver){
                     clearInterval(self.game.timerInterval);
@@ -294,7 +350,6 @@ export default {
     mounted(){
         var self = this;
         // Create one mino on center
-
         self.registerKeyboardMapping();
         self.registerEvents();
     }

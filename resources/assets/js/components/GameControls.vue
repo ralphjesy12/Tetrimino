@@ -84,6 +84,7 @@ export default {
         startGame(){
             this.game.isStarted = true;
             this.game.isPaused = false;
+            this.game.isOver = false;
             Events.$emit('startGame');
         },
         continueGame(){
@@ -101,6 +102,12 @@ export default {
 
         Events.$on('gameHasKeyDown',function(keyCode){
             self.keydown = keyCode;
+        });
+
+        Events.$on('gameHasStopped',function(keyCode){
+            self.game.isStarted = false;
+            self.game.isPaused = false;
+            self.game.isOver = true;
         });
 
         Events.$on('gameHasKeyUp',function(keyCode){

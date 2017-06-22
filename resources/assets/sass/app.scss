@@ -88,6 +88,34 @@
 }
 
 
+.pulse {
+  animation: pulse 200ms infinite;
+}
+
+@-webkit-keyframes pulse {
+    0% {
+      opacity: 0.8;
+    }
+    70% {
+       opacity: 1;
+    }
+    100% {
+      opacity: 0.8;
+    }
+}
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  70% {
+     opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+
 .content{
     &.is-dark{
         &,.title{

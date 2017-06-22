@@ -63,13 +63,14 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 17);
 /******/ })
 /************************************************************************/
 /******/ ([
-/* 0 */,
-/* 1 */
+/* 0 */
 /***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
 
 // this module is a runtime utility for cleaner component module output and will
 // be included in the final webpack user bundle
@@ -77,8 +78,9 @@
 module.exports = function normalizeComponent (
   rawScriptExports,
   compiledTemplate,
+  injectStyles,
   scopeId,
-  cssModules
+  moduleIdentifier /* server only */
 ) {
   var esModule
   var scriptExports = rawScriptExports = rawScriptExports || {}
@@ -106,14 +108,51 @@ module.exports = function normalizeComponent (
     options._scopeId = scopeId
   }
 
-  // inject cssModules
-  if (cssModules) {
-    var computed = Object.create(options.computed || null)
-    Object.keys(cssModules).forEach(function (key) {
-      var module = cssModules[key]
-      computed[key] = function () { return module }
-    })
-    options.computed = computed
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
   }
 
   return {
@@ -125,7 +164,20 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 2 */,
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = (new Vue());
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = ([[[[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0]], [[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0]]], [[[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0]]], [[[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 1]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 1], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 1], [0, 1, 1, 1], [0, 0, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 1, 1, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 1], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 1], [0, 0, 0, 1]]], [[[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]], [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]]]]);
+
+/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -136,9 +188,9 @@ module.exports = function normalizeComponent (
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-__webpack_require__(7);
+__webpack_require__(8);
 
-window.Vue = __webpack_require__(17);
+window.Vue = __webpack_require__(15);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -147,7 +199,7 @@ window.Vue = __webpack_require__(17);
  */
 
 Vue.component('stage', __webpack_require__(11));
-Vue.component('game-controls', __webpack_require__(25));
+Vue.component('game-controls', __webpack_require__(9));
 var app = new Vue({
   el: '#app'
 });
@@ -164,7 +216,132 @@ var app = new Vue({
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Tiles_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Events_js__ = __webpack_require__(1);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            game: {
+                isStarted: false,
+                isPaused: true,
+                isOver: false
+            },
+            keydown: null
+        };
+    },
+
+    methods: {
+        isPressed: function isPressed(keycode) {
+            return { 'is-warning': this.keydown == keycode };
+        },
+        startGame: function startGame() {
+            this.game.isStarted = true;
+            this.game.isPaused = false;
+            this.game.isOver = false;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('startGame');
+        },
+        continueGame: function continueGame() {
+            this.game.isPaused = false;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('continueGame');
+        },
+        pauseGame: function pauseGame() {
+            this.game.isPaused = true;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('pauseGame');
+        }
+    },
+    created: function created() {
+        var self = this;
+
+        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyDown', function (keyCode) {
+            self.keydown = keyCode;
+        });
+
+        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasStopped', function (keyCode) {
+            self.game.isStarted = false;
+            self.game.isPaused = false;
+            self.game.isOver = true;
+        });
+
+        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyUp', function (keyCode) {
+            self.keydown = null;
+        });
+    }
+});
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Tiles_js__ = __webpack_require__(2);
 //
 //
 //
@@ -243,15 +420,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Events_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Events_js__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Mino_vue__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Mino_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__Mino_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Tiles_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Tiles_js__ = __webpack_require__(2);
 //
 //
 //
@@ -478,6 +655,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 }
             }
             console.log('Mino Safe');
+
             return true;
         },
         addToBoard: function addToBoard() {
@@ -494,10 +672,59 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     }
                 }
             }
+
+            // After adding to board, check for a complete line
+            console.log('Check lines');
+            this.checkLines();
+        },
+        checkLines: function checkLines() {
+            var self = this;
+            var row = [];
+            for (var i = 0; i < this.onboard.length; i++) {
+                if (typeof row[this.onboard[i].y] == 'undefined') row[this.onboard[i].y] = 0;
+                row[this.onboard[i].y]++;
+            }
+
+            var linesremoved = [];
+            for (var _i = 0; _i < row.length; _i++) {
+                if (typeof row[_i] != 'undefined' && row[_i] == this.size.w) {
+                    linesremoved.push(_i);
+                    this.clearLine(_i);
+                }
+            }
+
+            if (linesremoved.length > 0) {
+                setTimeout(function () {
+                    for (var j = 0; j < linesremoved.length; j++) {
+                        for (var _i2 = 0; _i2 < self.onboard.length; _i2++) {
+                            if (self.onboard[_i2].y < linesremoved[j] + j) self.onboard[_i2].y++;
+                        }
+                    }
+                }, 1000);
+            }
+        },
+        clearLine: function clearLine(row) {
+            var self = this;
+            for (var i = 0; i < this.onboard.length; i++) {
+                if (this.onboard[i].y == row) {
+                    this.onboard[i].sent = true;
+                }
+            }
+
+            setTimeout(function () {
+
+                for (var i = self.onboard.length - 1; i >= 0; i--) {
+                    if (self.onboard[i].sent && self.onboard[i].sent == true) {
+                        self.onboard.splice(i, 1);
+                    }
+                }
+            }, 1000);
         },
         stopGame: function stopGame() {
             clearInterval(this.game.timerInterval);
             this.game.isOver = true;
+            this.game.isPaused = false;
+            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('gameHasStopped');
             console.log('Game is Over');
         },
         pauseGame: function pauseGame() {
@@ -520,8 +747,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.minos = [];
             this.onboard = [];
             this.active = 0;
-            this.createNewMino();
             this.game.isPaused = false;
+            this.game.isOver = false;
+            this.createNewMino();
             this.game.timerInterval = setInterval(function () {
                 if (self.game.isPaused || self.game.isOver) {
                     clearInterval(self.game.timerInterval);
@@ -549,14 +777,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     mounted: function mounted() {
         var self = this;
         // Create one mino on center
-
         self.registerKeyboardMapping();
         self.registerEvents();
     }
 });
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 
@@ -614,23 +841,64 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 // });
 
 /***/ }),
-/* 8 */,
-/* 9 */,
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Component = __webpack_require__(1)(
+var disposed = false
+var Component = __webpack_require__(0)(
   /* script */
   __webpack_require__(5),
   /* template */
-  __webpack_require__(12),
+  __webpack_require__(14),
+  /* styles */
+  null,
   /* scopeId */
   null,
-  /* cssModules */
+  /* moduleIdentifier (server only) */
   null
 )
-Component.options.__file = "/Applications/MAMP/htdocs/Tetrimino/resources/assets/js/components/Mino.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+Component.options.__file = "/Applications/MAMP/htdocs/tetrimino/resources/assets/js/components/GameControls.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] GameControls.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-655d24e7", Component.options)
+  } else {
+    hotAPI.reload("data-v-655d24e7", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var Component = __webpack_require__(0)(
+  /* script */
+  __webpack_require__(6),
+  /* template */
+  __webpack_require__(13),
+  /* styles */
+  null,
+  /* scopeId */
+  null,
+  /* moduleIdentifier (server only) */
+  null
+)
+Component.options.__file = "/Applications/MAMP/htdocs/tetrimino/resources/assets/js/components/Mino.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
 if (Component.options.functional) {console.error("[vue-loader] Mino.vue: functional components are not supported with templates, they should use render functions.")}
 
 /* hot reload */
@@ -640,10 +908,13 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-4e74c8dc", Component.options)
+    hotAPI.createRecord("data-v-3fa808fc", Component.options)
   } else {
-    hotAPI.reload("data-v-4e74c8dc", Component.options)
+    hotAPI.reload("data-v-3fa808fc", Component.options)
   }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
 })()}
 
 module.exports = Component.exports
@@ -653,18 +924,21 @@ module.exports = Component.exports
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Component = __webpack_require__(1)(
+var disposed = false
+var Component = __webpack_require__(0)(
   /* script */
-  __webpack_require__(6),
+  __webpack_require__(7),
   /* template */
-  __webpack_require__(13),
+  __webpack_require__(12),
+  /* styles */
+  null,
   /* scopeId */
   null,
-  /* cssModules */
+  /* moduleIdentifier (server only) */
   null
 )
-Component.options.__file = "/Applications/MAMP/htdocs/Tetrimino/resources/assets/js/components/Stage.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+Component.options.__file = "/Applications/MAMP/htdocs/tetrimino/resources/assets/js/components/Stage.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
 if (Component.options.functional) {console.error("[vue-loader] Stage.vue: functional components are not supported with templates, they should use render functions.")}
 
 /* hot reload */
@@ -674,10 +948,13 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-940b29e2", Component.options)
+    hotAPI.createRecord("data-v-29a1a222", Component.options)
   } else {
-    hotAPI.reload("data-v-940b29e2", Component.options)
+    hotAPI.reload("data-v-29a1a222", Component.options)
   }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
 })()}
 
 module.exports = Component.exports
@@ -685,6 +962,56 @@ module.exports = Component.exports
 
 /***/ }),
 /* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "stage"
+  }, [_c('div', {
+    staticClass: "onboardtiles",
+    style: ({
+      width: this.size.w * 32 + 'px',
+      height: this.size.h * 32 + 'px'
+    })
+  }, _vm._l((this.onboard), function(mino, index) {
+    return _c('div', {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: (mino.y >= 0),
+        expression: "mino.y>=0"
+      }],
+      staticClass: "tile onboard",
+      class: {
+        'pulse': mino.sent
+      },
+      style: (_vm.tileStyle(mino.x, mino.y)),
+      attrs: {
+        "data-kind": mino.kind
+      }
+    })
+  })), _vm._v(" "), _vm._l((this.minos), function(mino, index) {
+    return _c('mino', {
+      key: mino.id,
+      attrs: {
+        "x": mino.x,
+        "y": mino.y,
+        "kind": mino.kind,
+        "face": mino.face
+      }
+    })
+  })], 2)
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-29a1a222", module.exports)
+  }
+}
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -713,67 +1040,138 @@ module.exports.render._withStripped = true
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-4e74c8dc", module.exports)
+     require("vue-hot-reload-api").rerender("data-v-3fa808fc", module.exports)
   }
 }
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
-    staticClass: "stage"
+    staticClass: "content has-text-left is-dark is-small"
+  }, [_vm._m(0), _vm._v(" "), _c('h2', {
+    staticClass: "title"
+  }, [_vm._v("Game Controls")]), _vm._v(" "), _c('div', {
+    staticClass: "columns"
   }, [_c('div', {
-    staticClass: "onboardtiles",
-    style: ({
-      width: this.size.w * 32 + 'px',
-      height: this.size.h * 32 + 'px'
-    })
-  }, _vm._l((this.onboard), function(mino, index) {
-    return _c('div', {
-      directives: [{
-        name: "show",
-        rawName: "v-show",
-        value: (mino.y >= 0),
-        expression: "mino.y>=0"
-      }],
-      staticClass: "tile onboard",
-      style: (_vm.tileStyle(mino.x, mino.y)),
-      attrs: {
-        "data-kind": mino.kind
-      }
-    })
-  })), _vm._v(" "), _vm._l((this.minos), function(mino, index) {
-    return _c('mino', {
-      key: mino.id,
-      attrs: {
-        "x": mino.x,
-        "y": mino.y,
-        "kind": mino.kind,
-        "face": mino.face
-      }
-    })
-  })], 2)
-},staticRenderFns: []}
+    staticClass: "column"
+  }, [_c('div', {
+    staticClass: "field has-addons"
+  }, [_c('p', {
+    staticClass: "control"
+  }, [(!_vm.game.isStarted) ? _c('a', {
+    staticClass: "button",
+    on: {
+      "click": _vm.startGame
+    }
+  }, [_vm._m(1), _vm._v(" "), _c('span', [_vm._v("Start")])]) : _vm._e(), _vm._v(" "), (_vm.game.isStarted) ? _c('a', {
+    staticClass: "button",
+    attrs: {
+      "disabled": !_vm.game.isPaused
+    },
+    on: {
+      "click": _vm.continueGame
+    }
+  }, [_vm._m(2), _vm._v(" "), _c('span', [_vm._v("Continue")])]) : _vm._e()]), _vm._v(" "), _c('p', {
+    staticClass: "control"
+  }, [_c('a', {
+    staticClass: "button",
+    attrs: {
+      "disabled": (_vm.game.isPaused || !_vm.game.isStarted)
+    },
+    on: {
+      "click": _vm.pauseGame
+    }
+  }, [_vm._m(3), _vm._v(" "), _c('span', [_vm._v("Pause")])])])])]), _vm._v(" "), _c('div', {
+    staticClass: "column"
+  }, [_c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(38)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-up"
+  })]), _vm._v(" ROTATE MINO"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(40)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-down"
+  })]), _vm._v(" MOVE DOWN"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(37)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-left"
+  })]), _vm._v(" MOVE LEFT"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white icon is-small key-tag",
+    class: this.isPressed(39)
+  }, [_c('i', {
+    staticClass: "fa fa-caret-right"
+  })]), _vm._v(" MOVE RIGHT"), _c('br'), _vm._v(" "), _c('div', {
+    staticClass: "tag is-white key-tag",
+    class: _vm.isPressed(32)
+  }, [_c('small', [_vm._v("SPACE")])]), _vm._v(" DROP"), _c('br')])])])
+},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('nav', {
+    staticClass: "level is-mobile"
+  }, [_c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Time Elapsed")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("01:30")])])]), _vm._v(" "), _c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Time Left")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("00:34")])])]), _vm._v(" "), _c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Lines Sent")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("456K")])])]), _vm._v(" "), _c('div', {
+    staticClass: "level-item has-text-centered"
+  }, [_c('div', [_c('p', {
+    staticClass: "heading"
+  }, [_vm._v("Score")]), _vm._v(" "), _c('p', {
+    staticClass: "title"
+  }, [_vm._v("789")])])])])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('span', {
+    staticClass: "icon is-small"
+  }, [_c('i', {
+    staticClass: "fa fa-play"
+  })])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('span', {
+    staticClass: "icon is-small"
+  }, [_c('i', {
+    staticClass: "fa fa-play"
+  })])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('span', {
+    staticClass: "icon is-small"
+  }, [_c('i', {
+    staticClass: "fa fa-pause"
+  })])
+}]}
 module.exports.render._withStripped = true
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-940b29e2", module.exports)
+     require("vue-hot-reload-api").rerender("data-v-655d24e7", module.exports)
   }
 }
 
 /***/ }),
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {/*!
- * Vue.js v2.3.3
+ * Vue.js v2.3.4
  * (c) 2014-2017 Evan You
  * Released under the MIT License.
  */
@@ -5202,7 +5600,7 @@ Object.defineProperty(Vue$3.prototype, '$ssrContext', {
   }
 });
 
-Vue$3.version = '2.3.3';
+Vue$3.version = '2.3.4';
 
 /*  */
 
@@ -5693,6 +6091,7 @@ function createPatchFunction (backend) {
   function initComponent (vnode, insertedVnodeQueue) {
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(insertedVnodeQueue, vnode.data.pendingInsert);
+      vnode.data.pendingInsert = null;
     }
     vnode.elm = vnode.componentInstance.$el;
     if (isPatchable(vnode)) {
@@ -10463,10 +10862,10 @@ Vue$3.compile = compileToFunctions;
 
 module.exports = Vue$3;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
 
 /***/ }),
-/* 18 */
+/* 16 */
 /***/ (function(module, exports) {
 
 var g;
@@ -10493,301 +10892,12 @@ module.exports = g;
 
 
 /***/ }),
-/* 19 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(3);
 module.exports = __webpack_require__(4);
 
-
-/***/ }),
-/* 20 */,
-/* 21 */,
-/* 22 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony default export */ __webpack_exports__["a"] = ([[[[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0]], [[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0]]], [[[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0]]], [[[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 1]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 1], [0, 1, 0, 0]], [[0, 0, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 1], [0, 1, 1, 1], [0, 0, 0, 0]]], [[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 1, 1, 0]], [[0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 1, 1], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 1, 1], [0, 0, 0, 1]]], [[[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]], [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]]]]);
-
-/***/ }),
-/* 23 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony default export */ __webpack_exports__["a"] = (new Vue());
-
-/***/ }),
-/* 24 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Events_js__ = __webpack_require__(23);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            game: {
-                isStarted: false,
-                isPaused: true,
-                isOver: false
-            },
-            keydown: null
-        };
-    },
-
-    methods: {
-        isPressed: function isPressed(keycode) {
-            return { 'is-warning': this.keydown == keycode };
-        },
-        startGame: function startGame() {
-            this.game.isStarted = true;
-            this.game.isPaused = false;
-            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('startGame');
-        },
-        continueGame: function continueGame() {
-            this.game.isPaused = false;
-            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('continueGame');
-        },
-        pauseGame: function pauseGame() {
-            this.game.isPaused = true;
-            __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$emit('pauseGame');
-        }
-    },
-    created: function created() {
-        var self = this;
-
-        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyDown', function (keyCode) {
-            self.keydown = keyCode;
-        });
-
-        __WEBPACK_IMPORTED_MODULE_0__Events_js__["a" /* default */].$on('gameHasKeyUp', function (keyCode) {
-            self.keydown = null;
-        });
-    }
-});
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Component = __webpack_require__(1)(
-  /* script */
-  __webpack_require__(24),
-  /* template */
-  __webpack_require__(26),
-  /* scopeId */
-  null,
-  /* cssModules */
-  null
-)
-Component.options.__file = "/Applications/MAMP/htdocs/Tetrimino/resources/assets/js/components/GameControls.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
-if (Component.options.functional) {console.error("[vue-loader] GameControls.vue: functional components are not supported with templates, they should use render functions.")}
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-9a47f672", Component.options)
-  } else {
-    hotAPI.reload("data-v-9a47f672", Component.options)
-  }
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "content has-text-left is-dark is-small"
-  }, [_vm._m(0), _vm._v(" "), _c('h2', {
-    staticClass: "title"
-  }, [_vm._v("Game Controls")]), _vm._v(" "), _c('div', {
-    staticClass: "columns"
-  }, [_c('div', {
-    staticClass: "column"
-  }, [_c('div', {
-    staticClass: "field has-addons"
-  }, [_c('p', {
-    staticClass: "control"
-  }, [(!_vm.game.isStarted) ? _c('a', {
-    staticClass: "button",
-    on: {
-      "click": _vm.startGame
-    }
-  }, [_vm._m(1), _vm._v(" "), _c('span', [_vm._v("Start")])]) : _vm._e(), _vm._v(" "), (_vm.game.isStarted) ? _c('a', {
-    staticClass: "button",
-    attrs: {
-      "disabled": !_vm.game.isPaused
-    },
-    on: {
-      "click": _vm.continueGame
-    }
-  }, [_vm._m(2), _vm._v(" "), _c('span', [_vm._v("Continue")])]) : _vm._e()]), _vm._v(" "), _c('p', {
-    staticClass: "control"
-  }, [_c('a', {
-    staticClass: "button",
-    attrs: {
-      "disabled": (_vm.game.isPaused || !_vm.game.isStarted)
-    },
-    on: {
-      "click": _vm.pauseGame
-    }
-  }, [_vm._m(3), _vm._v(" "), _c('span', [_vm._v("Pause")])])])])]), _vm._v(" "), _c('div', {
-    staticClass: "column"
-  }, [_c('div', {
-    staticClass: "tag is-white icon is-small key-tag",
-    class: this.isPressed(38)
-  }, [_c('i', {
-    staticClass: "fa fa-caret-up"
-  })]), _vm._v(" ROTATE MINO"), _c('br'), _vm._v(" "), _c('div', {
-    staticClass: "tag is-white icon is-small key-tag",
-    class: this.isPressed(40)
-  }, [_c('i', {
-    staticClass: "fa fa-caret-down"
-  })]), _vm._v(" MOVE DOWN"), _c('br'), _vm._v(" "), _c('div', {
-    staticClass: "tag is-white icon is-small key-tag",
-    class: this.isPressed(37)
-  }, [_c('i', {
-    staticClass: "fa fa-caret-left"
-  })]), _vm._v(" MOVE LEFT"), _c('br'), _vm._v(" "), _c('div', {
-    staticClass: "tag is-white icon is-small key-tag",
-    class: this.isPressed(39)
-  }, [_c('i', {
-    staticClass: "fa fa-caret-right"
-  })]), _vm._v(" MOVE RIGHT"), _c('br'), _vm._v(" "), _c('div', {
-    staticClass: "tag is-white key-tag",
-    class: _vm.isPressed(32)
-  }, [_c('small', [_vm._v("SPACE")])]), _vm._v(" DROP"), _c('br')])])])
-},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('nav', {
-    staticClass: "level is-mobile"
-  }, [_c('div', {
-    staticClass: "level-item has-text-centered"
-  }, [_c('div', [_c('p', {
-    staticClass: "heading"
-  }, [_vm._v("Time Elapsed")]), _vm._v(" "), _c('p', {
-    staticClass: "title"
-  }, [_vm._v("01:30")])])]), _vm._v(" "), _c('div', {
-    staticClass: "level-item has-text-centered"
-  }, [_c('div', [_c('p', {
-    staticClass: "heading"
-  }, [_vm._v("Time Left")]), _vm._v(" "), _c('p', {
-    staticClass: "title"
-  }, [_vm._v("00:34")])])]), _vm._v(" "), _c('div', {
-    staticClass: "level-item has-text-centered"
-  }, [_c('div', [_c('p', {
-    staticClass: "heading"
-  }, [_vm._v("Lines Sent")]), _vm._v(" "), _c('p', {
-    staticClass: "title"
-  }, [_vm._v("456K")])])]), _vm._v(" "), _c('div', {
-    staticClass: "level-item has-text-centered"
-  }, [_c('div', [_c('p', {
-    staticClass: "heading"
-  }, [_vm._v("Score")]), _vm._v(" "), _c('p', {
-    staticClass: "title"
-  }, [_vm._v("789")])])])])
-},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('span', {
-    staticClass: "icon is-small"
-  }, [_c('i', {
-    staticClass: "fa fa-play"
-  })])
-},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('span', {
-    staticClass: "icon is-small"
-  }, [_c('i', {
-    staticClass: "fa fa-play"
-  })])
-},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('span', {
-    staticClass: "icon is-small"
-  }, [_c('i', {
-    staticClass: "fa fa-pause"
-  })])
-}]}
-module.exports.render._withStripped = true
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-9a47f672", module.exports)
-  }
-}
 
 /***/ })
 /******/ ]);
