@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
     <div class="stage">
         <div class="onboardtiles" :style="{ width : this.size.w * 32 + 'px' , height : this.size.h * 32 + 'px'  }">
             <div v-for="(mino,index) in this.onboard" class="tile onboard" :data-kind="mino.kind" :style="tileStyle(mino.x,mino.y)" v-show="mino.y>=0" :class="{ 'pulse' : mino.sent }"></div>
@@ -168,7 +168,7 @@ export default {
             this.minos = [];
             this.minos.push({
                 x : Math.floor(this.size.w / 2) - 2,
-                y :  -3,
+                y :  -4,
                 kind : this.getRandomInt(0,7),
                 face : this.getRandomInt(0,4)
             });

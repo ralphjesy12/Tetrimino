@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
     <div class="mino" :style="minoStyle(x,y)" :data-kind="this.kind">
         <template v-for="(tilerow,yy) in this.tiles[this.kind][this.face]">
             <template v-for="(tile,xx) in tilerow">

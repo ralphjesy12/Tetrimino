@@ -15,8 +15,8 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('stage', require('./components/Stage.vue'));
-Vue.component('game-controls', require('./components/GameControls.vue'));
+Vue.component('stage', require('./components/Stage.vue').default);
+Vue.component('game-controls', require('./components/GameControls.vue').default);
 const app = new Vue({
     el: '#app',
 });
